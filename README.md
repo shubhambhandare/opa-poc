@@ -263,3 +263,12 @@ spec:
 
 ---
 
+## 🎯 **Conclusion**  
+
+This PoC demonstrates how **OPA - Gatekeeper** enforces security policies in Kubernetes.  
+
+✔ **Use Case 1:** Prevents Pods from running as `root`.  
+✔ **Use Case 2:** Restricts container images to a specific registry (`gcr.io`).  
+✔ **Use Case 3:** Requires a `team_id` label for all Pods.  
+
+This setup ensures **strong governance and compliance** for Kubernetes workloads.
