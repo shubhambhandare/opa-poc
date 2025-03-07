@@ -179,3 +179,87 @@ spec:
 
 ---
 
+### 🔹 **Use Case 3: Enforcing `team_id` Label Requirement**  
+
+#### ✅ **ConstraintTemplate: TeamId**  
+
+```yaml
+apiVersion: templates.gatekeeper.sh/v1beta1
+kind: ConstraintTemplate
+metadata:
+  name: teamid
+spec:
+  crd:
+    spec:
+      names:
+        kind: TeamId
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package team_id_label
+
+        import future.keywords.if
+
+        default allow := false
+
+        allow if input.review.object.metadata.labels.team_id
+
+        violation[{"msg": msg, "details": {}}] {
+          not allow
+          msg := "The team_id label is required"
+        }
+```
+
+#### ✅ **Constraint: Enforce `team_id` Label**  
+
+```yaml
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: TeamId
+metadata:
+  name: teamid-pods
+spec:
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Pod"]
+    excludedNamespaces:
+      - kube-system
+  parameters: {}
+```
+
+#### ❌ **Example: Non-Compliant Pod (Denied)**  
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: invalid-pod
+spec:
+  containers:
+    - name: nginx
+      image: nginx:alpine
+```
+
+📌 **Reason:** The `team_id` label is missing.  
+
+#### ✅ **Example: Compliant Pod (Allowed)**  
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: valid-pod
+  labels:
+    team_id: frontend
+spec:
+  containers:
+    - name: nginx
+      image: gcr.io/nginx:alpine
+      securityContext:
+        runAsUser: 1011
+```
+
+📌 **Reason:** The `team_id` label is present, making the pod compliant.  
+
+---
+
