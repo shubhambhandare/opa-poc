@@ -106,3 +106,76 @@ spec:
 
 ---
 
+### 🔹 **Use Case 2: Restricting Allowed Container Registries**  
+
+#### ✅ **ConstraintTemplate: AllowedRepos**  
+
+```yaml
+apiVersion: templates.gatekeeper.sh/v1beta1
+kind: ConstraintTemplate
+metadata:
+  name: allowedrepos
+spec:
+  crd:
+    spec:
+      names:
+        kind: AllowedRepos
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package allowed_repos
+
+        import future.keywords.in
+
+        allowed_registry = "gcr.io"
+
+        violation[{"msg": msg}] {
+          input.review.object.metadata.namespace != "kube-system"
+          some container in input.review.object.spec.containers
+          not startswith(container.image, allowed_registry)
+          msg := sprintf("Container image %s is not from the allowed registry (%s)", [container.image, allowed_registry])
+        }
+```
+
+#### ✅ **Constraint: Enforce Allowed Registries**  
+
+```yaml
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: AllowedRepos
+metadata:
+  name: enforce-gcr-registry
+spec:
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Pod"]
+    excludedNamespaces:
+      - kube-system
+  parameters: {}
+```
+
+#### ✅ **Example: Compliant Pod (Allowed)**  
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: allowed-pod
+  namespace: default
+  labels:
+    team_id: sre
+spec:
+  securityContext:
+    runAsUser: 1000
+  containers:
+    - name: my-container
+      image: gcr.io/my-project/my-image:latest
+      securityContext:
+        runAsUser: 1000
+      command: ["sleep", "3600"]
+```
+
+📌 **Reason:** The container image originates from the allowed registry (`gcr.io`).  
+
+---
+
