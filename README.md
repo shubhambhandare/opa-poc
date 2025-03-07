@@ -9,7 +9,7 @@ This **Proof of Concept (PoC)** demonstrates the use of **Open Policy Agent (OPA
 - We define **three security policies** (**ConstraintTemplates**) to restrict Kubernetes Pods based on:  
   1. **Non-root user enforcement**  
   2. **Allowed container image registries**  
-  3. **Required resource requests/limits**  
+  3. **Enforce label requirement**  
 - Each policy has:  
   - A **ConstraintTemplate** (policy logic).  
   - A **Constraint** (enforcement rule).  
