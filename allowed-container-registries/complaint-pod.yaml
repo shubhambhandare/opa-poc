@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: allowed-pod
+  namespace: default
+  labels:
+    team_id: sre
+spec:
+  securityContext:
+    runAsUser: 1000
+  containers:
+    - name: my-container
+      image: gcr.io/my-project/my-image:latest
+      securityContext:
+        runAsUser: 1000
+      command: ["sleep", "3600"]
