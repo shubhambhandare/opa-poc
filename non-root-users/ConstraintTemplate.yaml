@@ -1,0 +1,27 @@
+apiVersion: templates.gatekeeper.sh/v1beta1
+kind: ConstraintTemplate
+metadata:
+  name: rootcontainers
+spec:
+  crd:
+    spec:
+      names:
+        kind: RootContainers
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package root_containers
+
+        import future.keywords.in
+
+        violation[{"msg": msg}] {
+          some container in input.review.object.spec.containers
+          not container.securityContext.runAsUser
+          msg := "Container must have runAsUser set"
+        }
+
+        violation[{"msg": msg}] {
+          some container in input.review.object.spec.containers
+          container.securityContext.runAsUser == 0
+          msg := sprintf("Root user (UID 0) is not allowed in container %s", [container.name])
+        }
