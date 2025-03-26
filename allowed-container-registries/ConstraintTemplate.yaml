@@ -1,0 +1,24 @@
+apiVersion: templates.gatekeeper.sh/v1beta1
+kind: ConstraintTemplate
+metadata:
+  name: allowedrepos
+spec:
+  crd:
+    spec:
+      names:
+        kind: AllowedRepos
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package allowed_repos
+
+        import future.keywords.in
+
+        allowed_registry = "gcr.io"
+
+        violation[{"msg": msg}] {
+          input.review.object.metadata.namespace != "kube-system"
+          some container in input.review.object.spec.containers
+          not startswith(container.image, allowed_registry)
+          msg := sprintf("Container image %s is not from the allowed registry (%s)", [container.image, allowed_registry])
+        }
