@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: valid-pod
+  labels:
+    team_id: frontend
+spec:
+  containers:
+    - name: nginx
+      image: gcr.io/nginx:alpine
+      securityContext:
+        runAsUser: 1011
